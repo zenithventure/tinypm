@@ -1,0 +1,170 @@
+import { describe, it, expect } from "vitest"
+import { createWorkspaceSchema } from "@/lib/validations/workspace"
+import { createRoadmapItemSchema } from "@/lib/validations/roadmap-item"
+import { createWorkItemSchema } from "@/lib/validations/work-item"
+import { createArtefactLinkSchema } from "@/lib/validations/artefact-link"
+
+describe("createWorkspaceSchema", () => {
+  it("accepts valid input", () => {
+    const result = createWorkspaceSchema.safeParse({
+      name: "VeloQuote",
+      slug: "veloquote",
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("requires name", () => {
+    const result = createWorkspaceSchema.safeParse({ slug: "test" })
+    expect(result.success).toBe(false)
+  })
+
+  it("requires slug", () => {
+    const result = createWorkspaceSchema.safeParse({ name: "Test" })
+    expect(result.success).toBe(false)
+  })
+
+  it("validates slug format", () => {
+    const result = createWorkspaceSchema.safeParse({
+      name: "Test",
+      slug: "Invalid Slug!",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts optional fields", () => {
+    const result = createWorkspaceSchema.safeParse({
+      name: "Test",
+      slug: "test",
+      description: "A test workspace",
+      githubRepoUrl: "https://github.com/org/repo",
+      driveFolderUrl: "https://drive.google.com/drive/folders/abc",
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts empty string for optional URL fields", () => {
+    const result = createWorkspaceSchema.safeParse({
+      name: "Test",
+      slug: "test",
+      githubRepoUrl: "",
+      driveFolderUrl: "",
+    })
+    expect(result.success).toBe(true)
+  })
+})
+
+describe("createRoadmapItemSchema", () => {
+  it("accepts valid input", () => {
+    const result = createRoadmapItemSchema.safeParse({
+      title: "PDF extraction v2",
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("requires title", () => {
+    const result = createRoadmapItemSchema.safeParse({})
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts all optional tags", () => {
+    const result = createRoadmapItemSchema.safeParse({
+      title: "Test",
+      quarter: "Q2-2026",
+      theme: "Payments",
+      milestone: "v2.0",
+      status: "in-progress",
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects invalid status", () => {
+    const result = createRoadmapItemSchema.safeParse({
+      title: "Test",
+      status: "invalid",
+    })
+    expect(result.success).toBe(false)
+  })
+})
+
+describe("createWorkItemSchema", () => {
+  it("accepts valid input", () => {
+    const result = createWorkItemSchema.safeParse({
+      title: "Implement PDF parser",
+      type: "feature",
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("requires type", () => {
+    const result = createWorkItemSchema.safeParse({
+      title: "Test",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("validates type enum", () => {
+    const result = createWorkItemSchema.safeParse({
+      title: "Test",
+      type: "invalid-type",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts all valid types", () => {
+    const types = ["feature", "bug", "decision", "sales-insight", "ops-task"]
+    types.forEach((type) => {
+      const result = createWorkItemSchema.safeParse({ title: "Test", type })
+      expect(result.success).toBe(true)
+    })
+  })
+
+  it("accepts optional fields", () => {
+    const result = createWorkItemSchema.safeParse({
+      title: "Test",
+      type: "decision",
+      priority: "high",
+      status: "in-progress",
+      description: "Details here",
+      decisionOutcome: "We chose option A",
+      decisionStatus: "approved",
+    })
+    expect(result.success).toBe(true)
+  })
+})
+
+describe("createArtefactLinkSchema", () => {
+  it("accepts valid input", () => {
+    const result = createArtefactLinkSchema.safeParse({
+      url: "https://docs.google.com/document/d/abc",
+      label: "PRD Document",
+      type: "google-doc",
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("requires valid URL", () => {
+    const result = createArtefactLinkSchema.safeParse({
+      url: "not-a-url",
+      label: "Test",
+      type: "other",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("requires label", () => {
+    const result = createArtefactLinkSchema.safeParse({
+      url: "https://example.com",
+      type: "other",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("validates type enum", () => {
+    const result = createArtefactLinkSchema.safeParse({
+      url: "https://example.com",
+      label: "Test",
+      type: "invalid",
+    })
+    expect(result.success).toBe(false)
+  })
+})

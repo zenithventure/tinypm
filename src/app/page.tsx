@@ -1,101 +1,89 @@
-import Image from "next/image";
+import Link from "next/link"
+import { ArrowRight, GitBranch, FileText, Video, Layers } from "lucide-react"
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="min-h-screen bg-white">
+      {/* Nav */}
+      <header className="border-b">
+        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+          <span className="text-lg font-bold text-blue-600">
+            Tiny<span className="text-gray-900">PM</span>
+          </span>
+          <Link
+            href="/login"
+            className="text-sm font-medium text-blue-600 hover:text-blue-700"
           >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            Sign in
+          </Link>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      </header>
+
+      {/* Hero */}
+      <section className="max-w-3xl mx-auto px-4 py-20 text-center">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-balance">
+          Context layer for product work
+        </h1>
+        <p className="text-lg text-gray-600 mb-8 max-w-xl mx-auto">
+          Connect Google Meet, Drive, and GitHub. Stop being the human bridge
+          between systems that don&apos;t talk to each other.
+        </p>
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition"
         >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+          Get started free <ArrowRight className="w-4 h-4" />
+        </Link>
+      </section>
+
+      {/* Features */}
+      <section className="max-w-5xl mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <FeatureCard
+            icon={<Layers className="w-6 h-6 text-blue-600" />}
+            title="Roadmap items"
+            description="Tag by quarter, theme, or milestone. Health derived automatically from linked work items."
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <FeatureCard
+            icon={<GitBranch className="w-6 h-6 text-blue-600" />}
+            title="GitHub integration"
+            description="Issues and PRs auto-link to work items. Unlinked issues surface in your inbox."
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
+          <FeatureCard
+            icon={<FileText className="w-6 h-6 text-blue-600" />}
+            title="Drive artefacts"
+            description="Link PRDs, decision docs, and notes to any work item. Always know the 'why'."
           />
-          Go to nextjs.org →
-        </a>
+          <FeatureCard
+            icon={<Video className="w-6 h-6 text-blue-600" />}
+            title="Meet transcript parsing"
+            description="AI extracts action items, decisions, and sales insights from your meetings."
+          />
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t py-8 text-center text-sm text-gray-500">
+        <p>TinyPM v0.0.1</p>
       </footer>
     </div>
-  );
+  )
+}
+
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode
+  title: string
+  description: string
+}) {
+  return (
+    <div className="border rounded-xl p-6">
+      <div className="mb-3">{icon}</div>
+      <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
+      <p className="text-sm text-gray-600">{description}</p>
+    </div>
+  )
 }
