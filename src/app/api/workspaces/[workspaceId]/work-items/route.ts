@@ -5,10 +5,10 @@ import { createWorkItemSchema } from "@/lib/validations/work-item"
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ workspaceId: string }> }
+  { params }: { params: { workspaceId: string } }
 ) {
   try {
-    const { workspaceId } = await params
+    const { workspaceId } = params
     await requireWorkspaceMember(workspaceId)
 
     const { searchParams } = new URL(request.url)
@@ -30,10 +30,10 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ workspaceId: string }> }
+  { params }: { params: { workspaceId: string } }
 ) {
   try {
-    const { workspaceId } = await params
+    const { workspaceId } = params
     await requireWorkspaceMember(workspaceId)
     const body = await request.json()
     const parsed = createWorkItemSchema.safeParse(body)

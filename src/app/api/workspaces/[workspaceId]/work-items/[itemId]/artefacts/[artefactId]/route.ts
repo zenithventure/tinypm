@@ -4,10 +4,10 @@ import { deleteArtefactLink } from "@/lib/db/queries/artefact-links"
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ workspaceId: string; itemId: string; artefactId: string }> }
+  { params }: { params: { workspaceId: string; itemId: string; artefactId: string } }
 ) {
   try {
-    const { workspaceId, artefactId } = await params
+    const { workspaceId, artefactId } = params
     await requireWorkspaceMember(workspaceId)
     await deleteArtefactLink(artefactId)
     return NextResponse.json({ ok: true })

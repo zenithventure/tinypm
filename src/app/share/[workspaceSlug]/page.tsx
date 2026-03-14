@@ -12,9 +12,9 @@ async function getPublicRoadmap(slug: string) {
 export default async function PublicSharePage({
   params,
 }: {
-  params: Promise<{ workspaceSlug: string }>
+  params: { workspaceSlug: string }
 }) {
-  const { workspaceSlug } = await params
+  const { workspaceSlug } = params
   const data = await getPublicRoadmap(workspaceSlug)
 
   if (!data) {

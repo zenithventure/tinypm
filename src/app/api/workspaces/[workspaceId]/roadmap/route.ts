@@ -5,10 +5,10 @@ import { createRoadmapItemSchema } from "@/lib/validations/roadmap-item"
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ workspaceId: string }> }
+  { params }: { params: { workspaceId: string } }
 ) {
   try {
-    const { workspaceId } = await params
+    const { workspaceId } = params
     await requireWorkspaceMember(workspaceId)
     const items = await getRoadmapItems(workspaceId)
     return NextResponse.json(items)
@@ -21,10 +21,10 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ workspaceId: string }> }
+  { params }: { params: { workspaceId: string } }
 ) {
   try {
-    const { workspaceId } = await params
+    const { workspaceId } = params
     await requireWorkspaceMember(workspaceId)
     const body = await request.json()
     const parsed = createRoadmapItemSchema.safeParse(body)

@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState } from "react"
+import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import useSWR from "swr"
 import { Button } from "@/components/ui/button"
@@ -16,9 +16,9 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 export default function NewWorkItemPage({
   params,
 }: {
-  params: Promise<{ workspaceId: string }>
+  params: { workspaceId: string }
 }) {
-  const { workspaceId } = use(params)
+  const { workspaceId } = params
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()

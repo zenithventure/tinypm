@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import useSWR from "swr"
 import { Button } from "@/components/ui/button"
@@ -15,9 +15,9 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 export default function WorkspaceSettingsPage({
   params,
 }: {
-  params: Promise<{ workspaceId: string }>
+  params: { workspaceId: string }
 }) {
-  const { workspaceId } = use(params)
+  const { workspaceId } = params
   const router = useRouter()
   const { toast } = useToast()
   const { data: workspace, mutate } = useSWR(`/api/workspaces/${workspaceId}`, fetcher)

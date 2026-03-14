@@ -1,6 +1,5 @@
 "use client"
 
-import { use } from "react"
 import useSWR from "swr"
 import { Users } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -12,9 +11,9 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 export default function MembersPage({
   params,
 }: {
-  params: Promise<{ workspaceId: string }>
+  params: { workspaceId: string }
 }) {
-  const { workspaceId } = use(params)
+  const { workspaceId } = params
   const { data: members, isLoading } = useSWR(
     `/api/workspaces/${workspaceId}/members`,
     fetcher

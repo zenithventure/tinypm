@@ -1,6 +1,5 @@
 "use client"
 
-import { use } from "react"
 import useSWR from "swr"
 import { Map, ListTodo, Users } from "lucide-react"
 import { PageHeader } from "@/components/shared/page-header"
@@ -11,9 +10,9 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 export default function WorkspaceOverviewPage({
   params,
 }: {
-  params: Promise<{ workspaceId: string }>
+  params: { workspaceId: string }
 }) {
-  const { workspaceId } = use(params)
+  const { workspaceId } = params
   const { data: workspace, isLoading } = useSWR(`/api/workspaces/${workspaceId}`, fetcher)
   const { data: roadmapItems } = useSWR(`/api/workspaces/${workspaceId}/roadmap`, fetcher)
   const { data: workItems } = useSWR(`/api/workspaces/${workspaceId}/work-items`, fetcher)

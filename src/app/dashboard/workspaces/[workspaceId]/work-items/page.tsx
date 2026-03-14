@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import useSWR from "swr"
 import { Plus, ListTodo } from "lucide-react"
@@ -19,9 +19,9 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 export default function WorkItemsPage({
   params,
 }: {
-  params: Promise<{ workspaceId: string }>
+  params: { workspaceId: string }
 }) {
-  const { workspaceId } = use(params)
+  const { workspaceId } = params
   const router = useRouter()
   const [typeFilter, setTypeFilter] = useState("")
   const [statusFilter, setStatusFilter] = useState("")

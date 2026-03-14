@@ -5,10 +5,10 @@ import { updateWorkspaceSchema } from "@/lib/validations/workspace"
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ workspaceId: string }> }
+  { params }: { params: { workspaceId: string } }
 ) {
   try {
-    const { workspaceId } = await params
+    const { workspaceId } = params
     await requireWorkspaceMember(workspaceId)
     const workspace = await getWorkspaceById(workspaceId)
     if (!workspace) {
@@ -24,10 +24,10 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ workspaceId: string }> }
+  { params }: { params: { workspaceId: string } }
 ) {
   try {
-    const { workspaceId } = await params
+    const { workspaceId } = params
     await requireWorkspaceMember(workspaceId)
     const body = await request.json()
     const parsed = updateWorkspaceSchema.safeParse(body)
@@ -50,10 +50,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ workspaceId: string }> }
+  { params }: { params: { workspaceId: string } }
 ) {
   try {
-    const { workspaceId } = await params
+    const { workspaceId } = params
     await requireWorkspaceOwner(workspaceId)
     await deleteWorkspace(workspaceId)
     return NextResponse.json({ ok: true })

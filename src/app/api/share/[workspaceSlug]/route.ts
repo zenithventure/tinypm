@@ -5,10 +5,10 @@ import { getWorkItems } from "@/lib/db/queries/work-items"
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ workspaceSlug: string }> }
+  { params }: { params: { workspaceSlug: string } }
 ) {
   try {
-    const { workspaceSlug } = await params
+    const { workspaceSlug } = params
     const workspace = await getWorkspaceBySlug(workspaceSlug)
 
     if (!workspace || !workspace.isPublic) {

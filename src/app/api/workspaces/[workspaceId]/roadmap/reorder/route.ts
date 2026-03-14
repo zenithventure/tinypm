@@ -5,10 +5,10 @@ import { reorderRoadmapItemsSchema } from "@/lib/validations/roadmap-item"
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ workspaceId: string }> }
+  { params }: { params: { workspaceId: string } }
 ) {
   try {
-    const { workspaceId } = await params
+    const { workspaceId } = params
     await requireWorkspaceMember(workspaceId)
     const body = await request.json()
     const parsed = reorderRoadmapItemsSchema.safeParse(body)

@@ -5,10 +5,10 @@ import { updateWorkItemSchema } from "@/lib/validations/work-item"
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ workspaceId: string; itemId: string }> }
+  { params }: { params: { workspaceId: string; itemId: string } }
 ) {
   try {
-    const { workspaceId, itemId } = await params
+    const { workspaceId, itemId } = params
     await requireWorkspaceMember(workspaceId)
     const item = await getWorkItemById(itemId)
     if (!item) {
@@ -24,10 +24,10 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ workspaceId: string; itemId: string }> }
+  { params }: { params: { workspaceId: string; itemId: string } }
 ) {
   try {
-    const { workspaceId, itemId } = await params
+    const { workspaceId, itemId } = params
     await requireWorkspaceMember(workspaceId)
     const body = await request.json()
     const parsed = updateWorkItemSchema.safeParse(body)
@@ -50,10 +50,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ workspaceId: string; itemId: string }> }
+  { params }: { params: { workspaceId: string; itemId: string } }
 ) {
   try {
-    const { workspaceId, itemId } = await params
+    const { workspaceId, itemId } = params
     await requireWorkspaceMember(workspaceId)
     await deleteWorkItem(itemId)
     return NextResponse.json({ ok: true })

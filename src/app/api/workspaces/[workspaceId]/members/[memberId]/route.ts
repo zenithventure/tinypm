@@ -4,10 +4,10 @@ import { removeWorkspaceMember } from "@/lib/db/queries/workspaces"
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ workspaceId: string; memberId: string }> }
+  { params }: { params: { workspaceId: string; memberId: string } }
 ) {
   try {
-    const { workspaceId, memberId } = await params
+    const { workspaceId, memberId } = params
     await requireWorkspaceOwner(workspaceId)
     await removeWorkspaceMember(workspaceId, memberId)
     return NextResponse.json({ ok: true })

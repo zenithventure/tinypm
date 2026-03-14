@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import useSWR from "swr"
 import { Plus, Map } from "lucide-react"
@@ -20,9 +20,9 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 export default function RoadmapPage({
   params,
 }: {
-  params: Promise<{ workspaceId: string }>
+  params: { workspaceId: string }
 }) {
-  const { workspaceId } = use(params)
+  const { workspaceId } = params
   const router = useRouter()
   const { toast } = useToast()
   const { data: items, isLoading, mutate } = useSWR(

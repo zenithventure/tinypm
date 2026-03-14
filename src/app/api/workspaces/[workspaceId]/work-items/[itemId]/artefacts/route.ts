@@ -5,10 +5,10 @@ import { createArtefactLinkSchema } from "@/lib/validations/artefact-link"
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ workspaceId: string; itemId: string }> }
+  { params }: { params: { workspaceId: string; itemId: string } }
 ) {
   try {
-    const { workspaceId, itemId } = await params
+    const { workspaceId, itemId } = params
     await requireWorkspaceMember(workspaceId)
     const body = await request.json()
     const parsed = createArtefactLinkSchema.safeParse(body)
