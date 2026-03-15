@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import useSWR from "swr"
-import { Plus, ListTodo } from "lucide-react"
+import { Plus, ListTodo, Kanban } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Select } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -42,9 +42,17 @@ export default function WorkItemsPage({
         title="Work Items"
         description="All work items in this workspace"
         actions={
-          <Button onClick={() => router.push(`/dashboard/workspaces/${workspaceId}/work-items/new`)}>
-            <Plus className="w-4 h-4 mr-1" /> New item
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => router.push(`/dashboard/workspaces/${workspaceId}/work-items/kanban`)}
+            >
+              <Kanban className="w-4 h-4 mr-1" /> Kanban
+            </Button>
+            <Button onClick={() => router.push(`/dashboard/workspaces/${workspaceId}/work-items/new`)}>
+              <Plus className="w-4 h-4 mr-1" /> New item
+            </Button>
+          </div>
         }
       />
 
