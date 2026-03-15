@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, Map, ListTodo, Settings, Users, Menu, X, LogOut } from "lucide-react"
+import { LayoutDashboard, Map, ListTodo, Settings, Users, Menu, X, LogOut, LifeBuoy } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
 
 const navItems = [
   { href: "/dashboard/workspaces", label: "Workspaces", icon: LayoutDashboard },
+  { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
