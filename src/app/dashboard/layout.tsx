@@ -9,7 +9,6 @@ import { useAuth } from "@/hooks/use-auth"
 
 const navItems = [
   { href: "/dashboard/workspaces", label: "Workspaces", icon: LayoutDashboard },
-  { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -81,6 +80,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
         )}
         <div className="ml-auto flex items-center gap-4">
+          <Link
+            href="/dashboard/support"
+            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            title="Support"
+          >
+            <LifeBuoy className="w-4 h-4" />
+            <span className="hidden sm:inline">Support</span>
+          </Link>
           <span className="text-sm text-gray-600 hidden sm:inline">{user?.email}</span>
           <button onClick={handleSignOut} className="text-sm text-gray-500 hover:text-gray-700">
             <LogOut className="w-4 h-4" />
