@@ -3,12 +3,19 @@ import { db } from "@/lib/db"
 import { workspaceMembers } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
 
-export async function requireAuth() {
+type AuthenticatedUser = {
+  id: string
+  name?: string | null
+  email?: string | null
+  image?: string | null
+}
+
+export async function requireAuth(): Promise<AuthenticatedUser> {
   const session = await auth()
   if (!session?.user?.id) {
     throw new Error("Unauthorized")
   }
-  return session.user
+  return session.user as AuthenticatedUser
 }
 
 export async function requireWorkspaceMember(workspaceId: string) {

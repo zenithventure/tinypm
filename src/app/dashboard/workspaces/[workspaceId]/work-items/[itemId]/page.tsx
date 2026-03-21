@@ -20,6 +20,8 @@ import {
   WORK_ITEM_TYPES, WORK_ITEM_STATUSES, WORK_ITEM_PRIORITIES,
   ARTEFACT_TYPES, TYPE_LABELS, STATUS_LABELS, PRIORITY_LABELS,
 } from "@/lib/constants"
+import { CommentsSection } from "@/components/shared/comments-section"
+import { ActivityFeed } from "@/components/shared/activity-feed"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -263,6 +265,20 @@ export default function WorkItemDetailPage({
           </div>
         </>
       )}
+
+      {/* Comments */}
+      <CommentsSection
+        workspaceId={workspaceId}
+        entityType="work_item"
+        entityId={itemId}
+      />
+
+      {/* Activity Feed */}
+      <ActivityFeed
+        workspaceId={workspaceId}
+        entityType="work_item"
+        entityId={itemId}
+      />
 
       {/* Add artefact modal */}
       <Modal open={showAddArtefact} onClose={() => setShowAddArtefact(false)} title="Add artefact link">

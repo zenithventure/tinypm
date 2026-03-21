@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { requireWorkspaceMember } from "@/lib/auth-guard"
 import { getWorkItemById, updateWorkItem, deleteWorkItem } from "@/lib/db/queries/work-items"
+import { logActivity } from "@/lib/db/queries/activity-log"
 import { updateWorkItemSchema } from "@/lib/validations/work-item"
 
 export async function GET(
@@ -28,7 +29,7 @@ export async function PATCH(
 ) {
   try {
     const { workspaceId, itemId } = params
-    await requireWorkspaceMember(workspaceId)
+    const { user } = await requireWorkspaceMember(workspaceId)
     const body = await request.json()
     const parsed = updateWorkItemSchema.safeParse(body)
 
@@ -39,7 +40,44 @@ export async function PATCH(
       )
     }
 
+    // Fetch current state for change tracking
+    const existing = await getWorkItemById(itemId)
+    if (!existing) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 })
+    }
+
     const item = await updateWorkItem(itemId, parsed.data)
+
+    // Log activity for key field changes
+    const actorId = user.id!
+
+    if (parsed.data.status && parsed.data.status !== existing.status) {
+      await logActivity(workspaceId, "work_item", itemId, actorId, "status_changed", {
+        from: existing.status,
+        to: parsed.data.status,
+      })
+    }
+
+    if (
+      "assigneeId" in parsed.data &&
+      parsed.data.assigneeId !== existing.assigneeId
+    ) {
+      await logActivity(workspaceId, "work_item", itemId, actorId, "assigned", {
+        from: existing.assigneeId,
+        to: parsed.data.assigneeId,
+      })
+    }
+
+    if (
+      "roadmapItemId" in parsed.data &&
+      parsed.data.roadmapItemId !== existing.roadmapItemId
+    ) {
+      await logActivity(workspaceId, "work_item", itemId, actorId, "linked_to_roadmap", {
+        from: existing.roadmapItemId,
+        to: parsed.data.roadmapItemId,
+      })
+    }
+
     return NextResponse.json(item)
   } catch (err: any) {
     if (err.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
