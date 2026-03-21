@@ -264,3 +264,47 @@ describe("getNextPublicId Number() coercion", () => {
     expect(ids[9]).toBe("WI-0010")
   })
 })
+
+// TD-0027: publicId generation — MAX(numeric_part) avoids collisions with legacy wrong IDs
+describe("getNextPublicId MAX-based approach (TD-0027)", () => {
+  // Simulates the TD-0027 fix: use MAX(numeric_part) instead of COUNT(*)
+  // to avoid collisions with pre-TD-0022 wrong publicIds still in the database.
+  function computePublicIdFromMax(maxNumericFromDb: unknown): string {
+    const num = Number(maxNumericFromDb ?? 0) + 1
+    return `WI-${String(num).padStart(4, "0")}`
+  }
+
+  it("empty workspace (no items) → WI-0001", () => {
+    expect(computePublicIdFromMax(null)).toBe("WI-0001")
+    expect(computePublicIdFromMax(undefined)).toBe("WI-0001")
+  })
+
+  it("one correct item WI-0001 (max=1) → WI-0002", () => {
+    expect(computePublicIdFromMax(1)).toBe("WI-0002")
+    expect(computePublicIdFromMax("1")).toBe("WI-0002")
+  })
+
+  it("legacy wrong IDs: WI-0001 + WI-0011 (max=11) → WI-0012 (no clash)", () => {
+    // Pre-TD-0022: 2nd item got WI-0011 instead of WI-0002.
+    // COUNT-based next would be WI-0002, but that doesn't clash.
+    // The real danger: COUNT=10 → tries WI-0011 which ALREADY EXISTS.
+    // MAX=11 → produces WI-0012 which is safe.
+    expect(computePublicIdFromMax(11)).toBe("WI-0012")
+  })
+
+  it("many legacy wrong IDs — max is always the safe baseline", () => {
+    // Simulate: 10 items in DB with wrong IDs (max numeric value = 91 for WI-0091)
+    // COUNT-based at count=9 would try WI-0010 — safe. At count=10 tries WI-0011 — CLASH.
+    // MAX-based with max=91 → WI-0092 — always safe.
+    expect(computePublicIdFromMax(91)).toBe("WI-0092")
+  })
+
+  it("no collision risk: next ID is always > all existing IDs", () => {
+    const existingMaxNums = [1, 11, 21, 31, 41, 51, 61, 71, 81, 91] // legacy wrong IDs
+    for (const maxNum of existingMaxNums) {
+      const nextId = computePublicIdFromMax(maxNum)
+      const nextNum = parseInt(nextId.replace("WI-", ""), 10)
+      expect(nextNum).toBeGreaterThan(maxNum)
+    }
+  })
+})
