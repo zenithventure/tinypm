@@ -17,6 +17,8 @@ import { HealthBar } from "@/components/shared/health-bar"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { useToast } from "@/components/ui/toast"
 import { ROADMAP_STATUSES, STATUS_LABELS } from "@/lib/constants"
+import { CommentsSection } from "@/components/shared/comments-section"
+import { ActivityFeed } from "@/components/shared/activity-feed"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -212,6 +214,24 @@ export default function RoadmapItemDetailPage({
             )}
           </div>
         </>
+      )}
+
+      {/* Comments */}
+      {!editing && (
+        <CommentsSection
+          workspaceId={workspaceId}
+          entityType="roadmap_item"
+          entityId={itemId}
+        />
+      )}
+
+      {/* Activity Feed */}
+      {!editing && (
+        <ActivityFeed
+          workspaceId={workspaceId}
+          entityType="roadmap_item"
+          entityId={itemId}
+        />
       )}
 
       <ConfirmDialog

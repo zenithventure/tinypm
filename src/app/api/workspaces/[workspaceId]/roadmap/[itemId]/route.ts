@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { requireWorkspaceMember } from "@/lib/auth-guard"
 import { getRoadmapItemById, updateRoadmapItem, deleteRoadmapItem } from "@/lib/db/queries/roadmap-items"
+import { logActivity } from "@/lib/db/queries/activity-log"
 import { updateRoadmapItemSchema } from "@/lib/validations/roadmap-item"
 
 export async function GET(
@@ -28,7 +29,7 @@ export async function PATCH(
 ) {
   try {
     const { workspaceId, itemId } = params
-    await requireWorkspaceMember(workspaceId)
+    const { user } = await requireWorkspaceMember(workspaceId)
     const body = await request.json()
     const parsed = updateRoadmapItemSchema.safeParse(body)
 
@@ -39,7 +40,22 @@ export async function PATCH(
       )
     }
 
+    // Fetch current state for change tracking
+    const existing = await getRoadmapItemById(itemId)
+    if (!existing) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 })
+    }
+
     const item = await updateRoadmapItem(itemId, parsed.data)
+
+    // Log activity for status changes
+    if (parsed.data.status && parsed.data.status !== existing.status) {
+      await logActivity(workspaceId, "roadmap_item", itemId, user.id!, "status_changed", {
+        from: existing.status,
+        to: parsed.data.status,
+      })
+    }
+
     return NextResponse.json(item)
   } catch (err: any) {
     if (err.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

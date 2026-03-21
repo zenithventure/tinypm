@@ -171,6 +171,39 @@ export const artefactLinks = pgTable("artefact_links", {
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 })
 
+// ── Item Comments ────────────────────────────────────────
+
+export const itemComments = pgTable("item_comments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  workspaceId: uuid("workspace_id")
+    .notNull()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
+  entityType: text("entity_type").notNull(), // 'roadmap_item' | 'work_item'
+  entityId: uuid("entity_id").notNull(),
+  authorId: uuid("author_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+})
+
+// ── Activity Log ─────────────────────────────────────────
+
+export const activityLog = pgTable("activity_log", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  workspaceId: uuid("workspace_id")
+    .notNull()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
+  entityType: text("entity_type").notNull(), // 'roadmap_item' | 'work_item'
+  entityId: uuid("entity_id").notNull(),
+  actorId: uuid("actor_id")
+    .references(() => users.id, { onDelete: "set null" }),
+  action: text("action").notNull(), // 'status_changed' | 'assigned' | 'linked_to_roadmap' | 'comment_added' | 'created' | ...
+  metadata: text("metadata"), // JSON string: { from, to, commentId, ... }
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+})
+
 // ── Relations ────────────────────────────────────────────
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -185,6 +218,8 @@ export const workspacesRelations = relations(workspaces, ({ many }) => ({
   roadmapItems: many(roadmapItems),
   workItems: many(workItems),
   signals: many(signals),
+  itemComments: many(itemComments),
+  activityLog: many(activityLog),
 }))
 
 export const workspaceMembersRelations = relations(workspaceMembers, ({ one }) => ({
@@ -242,5 +277,27 @@ export const signalsRelations = relations(signals, ({ one }) => ({
   promotedRoadmapItem: one(roadmapItems, {
     fields: [signals.promotedRoadmapItemId],
     references: [roadmapItems.id],
+  }),
+}))
+
+export const itemCommentsRelations = relations(itemComments, ({ one }) => ({
+  workspace: one(workspaces, {
+    fields: [itemComments.workspaceId],
+    references: [workspaces.id],
+  }),
+  author: one(users, {
+    fields: [itemComments.authorId],
+    references: [users.id],
+  }),
+}))
+
+export const activityLogRelations = relations(activityLog, ({ one }) => ({
+  workspace: one(workspaces, {
+    fields: [activityLog.workspaceId],
+    references: [workspaces.id],
+  }),
+  actor: one(users, {
+    fields: [activityLog.actorId],
+    references: [users.id],
   }),
 }))
