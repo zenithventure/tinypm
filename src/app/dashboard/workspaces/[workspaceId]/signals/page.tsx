@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import useSWR from "swr"
-import { Plus, Inbox, ArrowUpRight, X } from "lucide-react"
+import { Plus, Inbox, ArrowUpRight, X, Map } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Select } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -39,6 +39,7 @@ const TYPE_COLORS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   inbox: "bg-yellow-100 text-yellow-700",
+  linked: "bg-indigo-100 text-indigo-700",
   promoted: "bg-green-100 text-green-700",
   dismissed: "bg-gray-100 text-gray-500",
 }
@@ -54,7 +55,7 @@ export default function SignalsPage({
 
   const [typeFilter, setTypeFilter] = useState("")
   const [arrTierFilter, setArrTierFilter] = useState("")
-  const [statusFilter, setStatusFilter] = useState("inbox")
+  const [statusFilter, setStatusFilter] = useState("")
 
   const queryParams = new URLSearchParams()
   if (typeFilter) queryParams.set("type", typeFilter)
@@ -149,7 +150,7 @@ export default function SignalsPage({
           icon={<Inbox className="w-12 h-12" />}
           title="No signals"
           description={
-            statusFilter === "inbox"
+            !statusFilter || statusFilter === "inbox"
               ? "Capture your first signal to start triaging customer feedback."
               : "No signals match the current filters."
           }
@@ -215,7 +216,7 @@ export default function SignalsPage({
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
-                  {signal.status === "inbox" && (
+                  {(signal.status === "inbox" || signal.status === "linked") && (
                     <>
                       <Button
                         size="sm"
@@ -240,10 +241,26 @@ export default function SignalsPage({
                       </button>
                     </>
                   )}
-                  {signal.status === "promoted" && signal.promotedWorkItemId && (
-                    <span className="text-xs text-green-600 font-medium">
-                      ✓ Work item created
-                    </span>
+                  {signal.status === "linked" && signal.promotedRoadmapItemId && (
+                    <div className="flex flex-col items-end gap-0.5 ml-1">
+                      <span className="text-xs text-indigo-600 font-medium flex items-center gap-0.5">
+                        <Map className="w-3 h-3" /> Roadmap
+                      </span>
+                    </div>
+                  )}
+                  {signal.status === "promoted" && (
+                    <div className="flex flex-col items-end gap-0.5">
+                      {signal.promotedWorkItemId && (
+                        <span className="text-xs text-green-600 font-medium">
+                          ✓ Work item
+                        </span>
+                      )}
+                      {signal.promotedRoadmapItemId && (
+                        <span className="text-xs text-blue-600 font-medium flex items-center gap-0.5">
+                          <Map className="w-3 h-3" /> Roadmap
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

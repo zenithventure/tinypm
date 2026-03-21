@@ -3,6 +3,11 @@ import { signals, workItems } from "@/lib/db/schema"
 import { eq, and, desc, sql } from "drizzle-orm"
 import type { CreateSignalInput, UpdateSignalInput } from "@/lib/validations/signal"
 
+export type PromoteSignalOptions = {
+  workItemId?: string
+  roadmapItemId?: string
+}
+
 export async function getSignals(
   workspaceId: string,
   filters?: {
@@ -47,7 +52,7 @@ async function getNextPublicId(workspaceId: string): Promise<string> {
     .from(signals)
     .where(eq(signals.workspaceId, workspaceId))
 
-  const num = (result[0]?.count ?? 0) + 1
+  const num = Number(result[0]?.count ?? 0) + 1
   return `SIG-${String(num).padStart(4, "0")}`
 }
 
@@ -86,12 +91,31 @@ export async function updateSignal(id: string, data: UpdateSignalInput) {
   return signal
 }
 
-export async function promoteSignal(id: string, workItemId: string) {
+export async function promoteSignal(id: string, options: PromoteSignalOptions) {
   const [signal] = await db
     .update(signals)
     .set({
       status: "promoted",
-      promotedWorkItemId: workItemId,
+      ...(options.workItemId !== undefined && { promotedWorkItemId: options.workItemId }),
+      ...(options.roadmapItemId !== undefined && { promotedRoadmapItemId: options.roadmapItemId }),
+      updatedAt: new Date(),
+    })
+    .where(eq(signals.id, id))
+    .returning()
+
+  return signal
+}
+
+/**
+ * Link a signal to an existing roadmap item (without creating a work item).
+ * Sets status to "linked" to distinguish from "promoted" (which creates a work item).
+ */
+export async function linkSignalToRoadmap(id: string, roadmapItemId: string) {
+  const [signal] = await db
+    .update(signals)
+    .set({
+      status: "linked",
+      promotedRoadmapItemId: roadmapItemId,
       updatedAt: new Date(),
     })
     .where(eq(signals.id, id))

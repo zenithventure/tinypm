@@ -3,6 +3,10 @@ import { createWorkspaceSchema } from "@/lib/validations/workspace"
 import { createRoadmapItemSchema } from "@/lib/validations/roadmap-item"
 import { createWorkItemSchema } from "@/lib/validations/work-item"
 import { createArtefactLinkSchema } from "@/lib/validations/artefact-link"
+import {
+  promoteSignalSchema,
+  linkSignalToRoadmapSchema,
+} from "@/lib/validations/signal"
 
 describe("createWorkspaceSchema", () => {
   it("accepts valid input", () => {
@@ -129,6 +133,56 @@ describe("createWorkItemSchema", () => {
       decisionStatus: "approved",
     })
     expect(result.success).toBe(true)
+  })
+})
+
+describe("promoteSignalSchema (TD-0024)", () => {
+  it("accepts title only (no roadmap)", () => {
+    const result = promoteSignalSchema.safeParse({ title: "Fix login crash" })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts title + priority + roadmapItemId", () => {
+    const result = promoteSignalSchema.safeParse({
+      title: "Fix login crash",
+      priority: "high",
+      roadmapItemId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects invalid roadmapItemId (not a UUID)", () => {
+    const result = promoteSignalSchema.safeParse({
+      title: "Test",
+      roadmapItemId: "not-a-uuid",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("requires title", () => {
+    const result = promoteSignalSchema.safeParse({})
+    expect(result.success).toBe(false)
+  })
+})
+
+describe("linkSignalToRoadmapSchema (TD-0024)", () => {
+  it("accepts a valid UUID roadmapItemId", () => {
+    const result = linkSignalToRoadmapSchema.safeParse({
+      roadmapItemId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects non-UUID roadmapItemId", () => {
+    const result = linkSignalToRoadmapSchema.safeParse({
+      roadmapItemId: "not-a-uuid",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("requires roadmapItemId", () => {
+    const result = linkSignalToRoadmapSchema.safeParse({})
+    expect(result.success).toBe(false)
   })
 })
 

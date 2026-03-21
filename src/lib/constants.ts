@@ -27,7 +27,7 @@ export type SignalSource = (typeof SIGNAL_SOURCES)[number]
 export const SIGNAL_ARR_TIERS = ["enterprise", "mid-market", "smb", "unknown"] as const
 export type SignalArrTier = (typeof SIGNAL_ARR_TIERS)[number]
 
-export const SIGNAL_STATUSES = ["inbox", "promoted", "dismissed"] as const
+export const SIGNAL_STATUSES = ["inbox", "linked", "promoted", "dismissed"] as const
 export type SignalStatus = (typeof SIGNAL_STATUSES)[number]
 
 export const STATUS_LABELS: Record<string, string> = {
@@ -78,6 +78,7 @@ export const SIGNAL_ARR_TIER_LABELS: Record<string, string> = {
 
 export const SIGNAL_STATUS_LABELS: Record<string, string> = {
   inbox: "Inbox",
+  linked: "Linked",
   promoted: "Promoted",
   dismissed: "Dismissed",
 }

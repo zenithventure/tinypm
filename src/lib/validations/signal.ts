@@ -23,8 +23,15 @@ export const updateSignalSchema = createSignalSchema.partial().extend({
 export const promoteSignalSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   priority: z.enum(["low", "medium", "high", "critical"]).optional(),
+  /** Optional: assign the created work item to an existing roadmap item */
+  roadmapItemId: z.string().uuid().optional(),
+})
+
+export const linkSignalToRoadmapSchema = z.object({
+  roadmapItemId: z.string().uuid("Roadmap item ID must be a valid UUID"),
 })
 
 export type CreateSignalInput = z.infer<typeof createSignalSchema>
 export type UpdateSignalInput = z.infer<typeof updateSignalSchema>
 export type PromoteSignalInput = z.infer<typeof promoteSignalSchema>
+export type LinkSignalToRoadmapInput = z.infer<typeof linkSignalToRoadmapSchema>

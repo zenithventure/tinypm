@@ -40,7 +40,7 @@ export async function POST(
       )
     }
 
-    const { title, priority } = parsed.data
+    const { title, priority, roadmapItemId } = parsed.data
 
     // Build description with signal context
     const contextLines = [
@@ -59,7 +59,7 @@ export async function POST(
       .filter((l) => l !== null)
       .join("\n")
 
-    // Create tinypm work item
+    // Create tinypm work item, optionally nested under a roadmap item
     const workItemType = SIGNAL_TYPE_TO_WORK_ITEM_TYPE[signal.type] ?? "feature"
     const workItem = await createWorkItem(workspaceId, {
       title,
@@ -67,10 +67,14 @@ export async function POST(
       type: workItemType as any,
       priority: priority ?? "medium",
       status: "todo",
+      ...(roadmapItemId && { roadmapItemId }),
     })
 
-    // Mark signal as promoted
-    const updatedSignal = await promoteSignal(signalId, workItem.id)
+    // Mark signal as promoted (with optional roadmap link)
+    const updatedSignal = await promoteSignal(signalId, {
+      workItemId: workItem.id,
+      ...(roadmapItemId && { roadmapItemId }),
+    })
 
     return NextResponse.json(
       {
