@@ -133,6 +133,28 @@ export const workItems = pgTable("work_items", {
   updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 })
 
+// ── Signals ──────────────────────────────────────────────
+
+export const signals = pgTable("signals", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  publicId: text("public_id").notNull().unique(), // e.g. "SIG-0001"
+  workspaceId: uuid("workspace_id")
+    .notNull()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
+  description: text("description").notNull(),
+  source: text("source").notNull().default("manual"), // manual | slack | fathom
+  clientName: text("client_name"),
+  arrTier: text("arr_tier").notNull().default("unknown"), // enterprise | mid-market | smb | unknown
+  type: text("type").notNull(), // feature | bug | compliance | infra
+  status: text("status").notNull().default("inbox"), // inbox | promoted | dismissed
+  notes: text("notes"),
+  promotedWorkItemId: uuid("promoted_work_item_id")
+    .references(() => workItems.id, { onDelete: "set null" }),
+  capturedAt: timestamp("captured_at", { mode: "date" }).defaultNow().notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+})
+
 // ── Artefact Links ───────────────────────────────────────
 
 export const artefactLinks = pgTable("artefact_links", {
@@ -160,6 +182,7 @@ export const workspacesRelations = relations(workspaces, ({ many }) => ({
   members: many(workspaceMembers),
   roadmapItems: many(roadmapItems),
   workItems: many(workItems),
+  signals: many(signals),
 }))
 
 export const workspaceMembersRelations = relations(workspaceMembers, ({ one }) => ({
@@ -200,6 +223,17 @@ export const workItemsRelations = relations(workItems, ({ one, many }) => ({
 export const artefactLinksRelations = relations(artefactLinks, ({ one }) => ({
   workItem: one(workItems, {
     fields: [artefactLinks.workItemId],
+    references: [workItems.id],
+  }),
+}))
+
+export const signalsRelations = relations(signals, ({ one }) => ({
+  workspace: one(workspaces, {
+    fields: [signals.workspaceId],
+    references: [workspaces.id],
+  }),
+  promotedWorkItem: one(workItems, {
+    fields: [signals.promotedWorkItemId],
     references: [workItems.id],
   }),
 }))
