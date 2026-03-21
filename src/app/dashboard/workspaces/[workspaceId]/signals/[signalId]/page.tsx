@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import useSWR from "swr"
-import { ArrowLeft, ArrowUpRight, Trash2, Github } from "lucide-react"
+import { ArrowLeft, ArrowUpRight, Link2, Map, Trash2, Github } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
@@ -41,10 +41,27 @@ export default function SignalDetailPage({
     fetcher
   )
 
+  // Fetch roadmap items for selection dropdowns
+  const { data: roadmapItems } = useSWR<
+    { id: string; title: string; status: string; quarter?: string }[]
+  >(
+    `/api/workspaces/${workspaceId}/roadmap`,
+    fetcher
+  )
+
+  // ── Promote to Work Item state ────────────────────────
   const [promoteOpen, setPromoteOpen] = useState(false)
   const [promoteTitle, setPromoteTitle] = useState("")
   const [promotePriority, setPromotePriority] = useState("medium")
+  const [promoteRoadmapItemId, setPromoteRoadmapItemId] = useState("")
   const [promoting, setPromoting] = useState(false)
+
+  // ── Link to Roadmap state ─────────────────────────────
+  const [linkRoadmapOpen, setLinkRoadmapOpen] = useState(false)
+  const [linkRoadmapItemId, setLinkRoadmapItemId] = useState("")
+  const [linkingRoadmap, setLinkingRoadmap] = useState(false)
+
+  // ── Delete state ──────────────────────────────────────
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -63,6 +80,7 @@ export default function SignalDetailPage({
           body: JSON.stringify({
             title: promoteTitle,
             priority: promotePriority,
+            ...(promoteRoadmapItemId && { roadmapItemId: promoteRoadmapItemId }),
           }),
         }
       )
@@ -74,7 +92,8 @@ export default function SignalDetailPage({
       }
 
       const result = await res.json()
-      toast(`Promoted to work item ${result.workItem.publicId}`, { variant: "success" })
+      const roadmapMsg = promoteRoadmapItemId ? " and linked to roadmap" : ""
+      toast(`Promoted to work item ${result.workItem.publicId}${roadmapMsg}`, { variant: "success" })
       setPromoteOpen(false)
       mutate()
       router.push(
@@ -84,6 +103,39 @@ export default function SignalDetailPage({
       toast("Something went wrong", { variant: "error" })
     } finally {
       setPromoting(false)
+    }
+  }
+
+  async function handleLinkToRoadmap() {
+    if (!linkRoadmapItemId) {
+      toast("Please select a roadmap item", { variant: "error" })
+      return
+    }
+    setLinkingRoadmap(true)
+    try {
+      const res = await fetch(
+        `/api/workspaces/${workspaceId}/signals/${signalId}/link-roadmap`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ roadmapItemId: linkRoadmapItemId }),
+        }
+      )
+
+      if (!res.ok) {
+        const err = await res.json()
+        toast(err.error || "Failed to link to roadmap", { variant: "error" })
+        return
+      }
+
+      const result = await res.json()
+      toast(`Linked to roadmap: ${result.roadmapItem.title}`, { variant: "success" })
+      setLinkRoadmapOpen(false)
+      mutate()
+    } catch {
+      toast("Something went wrong", { variant: "error" })
+    } finally {
+      setLinkingRoadmap(false)
     }
   }
 
@@ -133,6 +185,17 @@ export default function SignalDetailPage({
 
   const isPromoted = signal.status === "promoted"
   const isDismissed = signal.status === "dismissed"
+  const hasWorkItem = Boolean(signal.promotedWorkItemId)
+  const hasRoadmapLink = Boolean(signal.promotedRoadmapItemId)
+
+  // Build roadmap item options for selects
+  const roadmapOptions = [
+    { value: "", label: "— No roadmap item —" },
+    ...(roadmapItems ?? []).map((item) => ({
+      value: item.id,
+      label: item.quarter ? `[${item.quarter}] ${item.title}` : item.title,
+    })),
+  ]
 
   return (
     <div>
@@ -151,17 +214,40 @@ export default function SignalDetailPage({
         actions={
           <div className="flex gap-2">
             {!isPromoted && !isDismissed && (
+              <>
+                <Button
+                  onClick={() => {
+                    setPromoteTitle(
+                      signal.clientName
+                        ? `[${signal.clientName}] ${signal.description.slice(0, 80)}`
+                        : signal.description.slice(0, 80)
+                    )
+                    setPromoteRoadmapItemId("")
+                    setPromoteOpen(true)
+                  }}
+                >
+                  <ArrowUpRight className="w-4 h-4 mr-1" /> Promote to issue
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setLinkRoadmapItemId("")
+                    setLinkRoadmapOpen(true)
+                  }}
+                >
+                  <Map className="w-4 h-4 mr-1" /> Link to Roadmap
+                </Button>
+              </>
+            )}
+            {isPromoted && !hasRoadmapLink && (
               <Button
+                variant="secondary"
                 onClick={() => {
-                  setPromoteTitle(
-                    signal.clientName
-                      ? `[${signal.clientName}] ${signal.description.slice(0, 80)}`
-                      : signal.description.slice(0, 80)
-                  )
-                  setPromoteOpen(true)
+                  setLinkRoadmapItemId("")
+                  setLinkRoadmapOpen(true)
                 }}
               >
-                <ArrowUpRight className="w-4 h-4 mr-1" /> Promote to issue
+                <Map className="w-4 h-4 mr-1" /> Link to Roadmap
               </Button>
             )}
             <Button
@@ -210,7 +296,8 @@ export default function SignalDetailPage({
           </div>
         )}
 
-        {isPromoted && signal.promotedWorkItemId && (
+        {/* Promoted to Work Item banner */}
+        {hasWorkItem && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <p className="text-sm text-green-800 font-medium">
               ✓ This signal was promoted to a work item.
@@ -227,9 +314,31 @@ export default function SignalDetailPage({
             </button>
           </div>
         )}
+
+        {/* Linked to Roadmap banner */}
+        {hasRoadmapLink && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center gap-2">
+              <Link2 className="w-4 h-4 text-blue-600" />
+              <p className="text-sm text-blue-800 font-medium">
+                ✓ This signal is linked to a roadmap item.
+              </p>
+            </div>
+            <button
+              onClick={() =>
+                router.push(
+                  `/dashboard/workspaces/${workspaceId}/roadmap/${signal.promotedRoadmapItemId}`
+                )
+              }
+              className="text-sm text-blue-700 underline mt-1"
+            >
+              View roadmap item →
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Promote modal */}
+      {/* Promote to Work Item modal */}
       {promoteOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
@@ -297,6 +406,16 @@ export default function SignalDetailPage({
               }))}
             />
 
+            {roadmapOptions.length > 1 && (
+              <Select
+                id="promote-roadmap"
+                label="Add to Roadmap (optional)"
+                value={promoteRoadmapItemId}
+                onChange={(e) => setPromoteRoadmapItemId(e.target.value)}
+                options={roadmapOptions}
+              />
+            )}
+
             <div className="flex gap-3 pt-2">
               <Button onClick={handlePromote} loading={promoting}>
                 Promote
@@ -305,6 +424,51 @@ export default function SignalDetailPage({
                 variant="secondary"
                 onClick={() => setPromoteOpen(false)}
                 disabled={promoting}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Link to Roadmap modal */}
+      {linkRoadmapOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <h2 className="text-lg font-bold">Link to Roadmap</h2>
+            <p className="text-sm text-gray-500">
+              Associate this signal with an existing roadmap item. The signal
+              will remain visible in the Signal PM command centre and will be
+              surfaced on the linked roadmap item.
+            </p>
+
+            {roadmapOptions.length <= 1 ? (
+              <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                No roadmap items found. Create a roadmap item first.
+              </div>
+            ) : (
+              <Select
+                id="link-roadmap-item"
+                label="Roadmap item"
+                value={linkRoadmapItemId}
+                onChange={(e) => setLinkRoadmapItemId(e.target.value)}
+                options={roadmapOptions}
+              />
+            )}
+
+            <div className="flex gap-3 pt-2">
+              <Button
+                onClick={handleLinkToRoadmap}
+                loading={linkingRoadmap}
+                disabled={roadmapOptions.length <= 1}
+              >
+                Link
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setLinkRoadmapOpen(false)}
+                disabled={linkingRoadmap}
               >
                 Cancel
               </Button>

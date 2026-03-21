@@ -150,6 +150,8 @@ export const signals = pgTable("signals", {
   notes: text("notes"),
   promotedWorkItemId: uuid("promoted_work_item_id")
     .references(() => workItems.id, { onDelete: "set null" }),
+  promotedRoadmapItemId: uuid("promoted_roadmap_item_id")
+    .references(() => roadmapItems.id, { onDelete: "set null" }),
   capturedAt: timestamp("captured_at", { mode: "date" }).defaultNow().notNull(),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
@@ -202,6 +204,7 @@ export const roadmapItemsRelations = relations(roadmapItems, ({ one, many }) => 
     references: [workspaces.id],
   }),
   workItems: many(workItems),
+  signals: many(signals),
 }))
 
 export const workItemsRelations = relations(workItems, ({ one, many }) => ({
@@ -235,5 +238,9 @@ export const signalsRelations = relations(signals, ({ one }) => ({
   promotedWorkItem: one(workItems, {
     fields: [signals.promotedWorkItemId],
     references: [workItems.id],
+  }),
+  promotedRoadmapItem: one(roadmapItems, {
+    fields: [signals.promotedRoadmapItemId],
+    references: [roadmapItems.id],
   }),
 }))

@@ -3,6 +3,11 @@ import { signals, workItems } from "@/lib/db/schema"
 import { eq, and, desc, sql } from "drizzle-orm"
 import type { CreateSignalInput, UpdateSignalInput } from "@/lib/validations/signal"
 
+export type PromoteSignalOptions = {
+  workItemId?: string
+  roadmapItemId?: string
+}
+
 export async function getSignals(
   workspaceId: string,
   filters?: {
@@ -86,18 +91,27 @@ export async function updateSignal(id: string, data: UpdateSignalInput) {
   return signal
 }
 
-export async function promoteSignal(id: string, workItemId: string) {
+export async function promoteSignal(id: string, options: PromoteSignalOptions) {
   const [signal] = await db
     .update(signals)
     .set({
       status: "promoted",
-      promotedWorkItemId: workItemId,
+      ...(options.workItemId !== undefined && { promotedWorkItemId: options.workItemId }),
+      ...(options.roadmapItemId !== undefined && { promotedRoadmapItemId: options.roadmapItemId }),
       updatedAt: new Date(),
     })
     .where(eq(signals.id, id))
     .returning()
 
   return signal
+}
+
+/**
+ * Link a signal to an existing roadmap item (without creating a work item).
+ * Sets status to "promoted" and records the roadmap association.
+ */
+export async function linkSignalToRoadmap(id: string, roadmapItemId: string) {
+  return promoteSignal(id, { roadmapItemId })
 }
 
 export async function deleteSignal(id: string) {

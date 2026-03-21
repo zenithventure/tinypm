@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import useSWR from "swr"
-import { Plus, Inbox, ArrowUpRight, X } from "lucide-react"
+import { Plus, Inbox, ArrowUpRight, X, Map } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Select } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -240,10 +240,19 @@ export default function SignalsPage({
                       </button>
                     </>
                   )}
-                  {signal.status === "promoted" && signal.promotedWorkItemId && (
-                    <span className="text-xs text-green-600 font-medium">
-                      ✓ Work item created
-                    </span>
+                  {signal.status === "promoted" && (
+                    <div className="flex flex-col items-end gap-0.5">
+                      {signal.promotedWorkItemId && (
+                        <span className="text-xs text-green-600 font-medium">
+                          ✓ Work item
+                        </span>
+                      )}
+                      {signal.promotedRoadmapItemId && (
+                        <span className="text-xs text-blue-600 font-medium flex items-center gap-0.5">
+                          <Map className="w-3 h-3" /> Roadmap
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
