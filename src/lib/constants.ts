@@ -16,6 +16,20 @@ export type ArtefactType = (typeof ARTEFACT_TYPES)[number]
 export const WORKSPACE_ROLES = ["owner", "member"] as const
 export type WorkspaceRole = (typeof WORKSPACE_ROLES)[number]
 
+// ── Signals ──────────────────────────────────────────────
+
+export const SIGNAL_TYPES = ["feature", "bug", "compliance", "infra"] as const
+export type SignalType = (typeof SIGNAL_TYPES)[number]
+
+export const SIGNAL_SOURCES = ["manual", "slack", "fathom"] as const
+export type SignalSource = (typeof SIGNAL_SOURCES)[number]
+
+export const SIGNAL_ARR_TIERS = ["enterprise", "mid-market", "smb", "unknown"] as const
+export type SignalArrTier = (typeof SIGNAL_ARR_TIERS)[number]
+
+export const SIGNAL_STATUSES = ["inbox", "promoted", "dismissed"] as const
+export type SignalStatus = (typeof SIGNAL_STATUSES)[number]
+
 export const STATUS_LABELS: Record<string, string> = {
   todo: "To Do",
   "in-progress": "In Progress",
@@ -40,4 +54,30 @@ export const PRIORITY_LABELS: Record<string, string> = {
   medium: "Medium",
   high: "High",
   critical: "Critical",
+}
+
+export const SIGNAL_TYPE_LABELS: Record<string, string> = {
+  feature: "Feature Request",
+  bug: "Bug Report",
+  compliance: "Compliance",
+  infra: "Infrastructure",
+}
+
+export const SIGNAL_SOURCE_LABELS: Record<string, string> = {
+  manual: "Manual",
+  slack: "Slack",
+  fathom: "Fathom",
+}
+
+export const SIGNAL_ARR_TIER_LABELS: Record<string, string> = {
+  enterprise: "Enterprise",
+  "mid-market": "Mid-Market",
+  smb: "SMB",
+  unknown: "Unknown",
+}
+
+export const SIGNAL_STATUS_LABELS: Record<string, string> = {
+  inbox: "Inbox",
+  promoted: "Promoted",
+  dismissed: "Dismissed",
 }
