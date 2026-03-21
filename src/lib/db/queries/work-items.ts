@@ -54,7 +54,10 @@ async function getNextPublicId(workspaceId: string): Promise<string> {
     .from(workItems)
     .where(eq(workItems.workspaceId, workspaceId))
 
-  const num = (result[0]?.count ?? 0) + 1
+  // PostgreSQL returns COUNT(*) as a bigint string via the Neon HTTP driver.
+  // Using Number() ensures arithmetic addition instead of string concatenation,
+  // which would otherwise produce "WI-0{n}1" instead of "WI-{n+1}".
+  const num = Number(result[0]?.count ?? 0) + 1
   return `WI-${String(num).padStart(4, "0")}`
 }
 
@@ -70,6 +73,7 @@ export async function createWorkItem(workspaceId: string, data: CreateWorkItemIn
       description: data.description || null,
       type: data.type,
       status: data.status || "todo",
+      statusSource: "manual",
       priority: data.priority || "medium",
       roadmapItemId: data.roadmapItemId || null,
       assigneeId: data.assigneeId || null,

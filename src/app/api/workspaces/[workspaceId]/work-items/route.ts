@@ -24,6 +24,7 @@ export async function GET(
   } catch (err: any) {
     if (err.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     if (err.message === "Forbidden") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    console.error("[GET /work-items] Unhandled error:", err)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
@@ -50,6 +51,7 @@ export async function POST(
   } catch (err: any) {
     if (err.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     if (err.message === "Forbidden") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    console.error("[POST /work-items] Unhandled error:", err)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

@@ -168,3 +168,45 @@ describe("createArtefactLinkSchema", () => {
     expect(result.success).toBe(false)
   })
 })
+
+// TD-0022: publicId generation — Number() coercion for COUNT(*) bigint string
+describe("getNextPublicId Number() coercion", () => {
+  // Simulates the fix: Number(count) + 1 must use arithmetic, not string concat
+  function computePublicId(countFromDb: unknown): string {
+    const num = Number(countFromDb ?? 0) + 1
+    return `WI-${String(num).padStart(4, "0")}`
+  }
+
+  it("handles count=0 (first item)", () => {
+    expect(computePublicId(0)).toBe("WI-0001")
+    expect(computePublicId("0")).toBe("WI-0001") // string from neon driver
+  })
+
+  it("handles count=1 (second item)", () => {
+    expect(computePublicId(1)).toBe("WI-0002")
+    expect(computePublicId("1")).toBe("WI-0002") // would have been "WI-0011" before fix
+  })
+
+  it("handles count=9 (tenth item)", () => {
+    expect(computePublicId(9)).toBe("WI-0010")
+    expect(computePublicId("9")).toBe("WI-0010") // would have been "WI-0091" before fix
+  })
+
+  it("handles count=99 (hundredth item)", () => {
+    expect(computePublicId(99)).toBe("WI-0100")
+    expect(computePublicId("99")).toBe("WI-0100") // would have been "WI-0991" before fix
+  })
+
+  it("handles null/undefined gracefully", () => {
+    expect(computePublicId(null)).toBe("WI-0001")
+    expect(computePublicId(undefined)).toBe("WI-0001")
+  })
+
+  it("produces sequential unique IDs without collisions", () => {
+    const ids = Array.from({ length: 10 }, (_, i) => computePublicId(String(i)))
+    const unique = new Set(ids)
+    expect(unique.size).toBe(10)
+    expect(ids[0]).toBe("WI-0001")
+    expect(ids[9]).toBe("WI-0010")
+  })
+})
