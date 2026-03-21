@@ -5,6 +5,7 @@ const TINYDESK_URL = process.env.TINYDESK_URL || "https://tinydesk.zenithstudio.
 
 const MAX_FILES = 3
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB per file
+const MAX_BODY_LENGTH = 5000
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"]
 
 export async function POST(req: Request) {
@@ -22,6 +23,13 @@ export async function POST(req: Request) {
 
   if (!subject?.trim() || !message?.trim()) {
     return NextResponse.json({ error: "Subject and message are required" }, { status: 400 })
+  }
+
+  if (message.length > MAX_BODY_LENGTH) {
+    return NextResponse.json(
+      { error: `Message must be ${MAX_BODY_LENGTH} characters or fewer` },
+      { status: 400 }
+    )
   }
 
   // Collect and validate files
@@ -80,8 +88,9 @@ export async function POST(req: Request) {
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
       console.error("TinyDesk ticket creation failed:", res.status, data)
+      const detail = data?.details?.body?.[0]
       return NextResponse.json(
-        { error: "Failed to submit support ticket" },
+        { error: detail || "Failed to submit support ticket" },
         { status: 502 }
       )
     }
