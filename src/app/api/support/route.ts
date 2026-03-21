@@ -5,7 +5,7 @@ const TINYDESK_URL = process.env.TINYDESK_URL || "https://tinydesk.zenithstudio.
 
 const MAX_FILES = 3
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB per file
-const MAX_BODY_LENGTH = 5000
+const MAX_BODY_LENGTH = 10000
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"]
 
 export async function POST(req: Request) {
