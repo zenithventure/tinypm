@@ -23,7 +23,6 @@ export const updateSignalSchema = createSignalSchema.partial().extend({
 export const promoteSignalSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   priority: z.enum(["low", "medium", "high", "critical"]).optional(),
-  createGithubIssue: z.boolean().optional(),
 })
 
 export type CreateSignalInput = z.infer<typeof createSignalSchema>

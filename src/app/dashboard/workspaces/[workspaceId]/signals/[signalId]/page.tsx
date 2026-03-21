@@ -39,7 +39,6 @@ export default function SignalDetailPage({
   const [promoteOpen, setPromoteOpen] = useState(false)
   const [promoteTitle, setPromoteTitle] = useState("")
   const [promotePriority, setPromotePriority] = useState("medium")
-  const [createGithubIssue, setCreateGithubIssue] = useState(false)
   const [promoting, setPromoting] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -59,7 +58,6 @@ export default function SignalDetailPage({
           body: JSON.stringify({
             title: promoteTitle,
             priority: promotePriority,
-            createGithubIssue,
           }),
         }
       )
@@ -71,10 +69,7 @@ export default function SignalDetailPage({
       }
 
       const result = await res.json()
-      const msg = result.githubIssueUrl
-        ? `Promoted! Work item + GitHub issue created.`
-        : `Promoted to work item ${result.workItem.publicId}`
-      toast(msg, { variant: "success" })
+      toast(`Promoted to work item ${result.workItem.publicId}`, { variant: "success" })
       setPromoteOpen(false)
       mutate()
       router.push(
@@ -258,16 +253,6 @@ export default function SignalDetailPage({
                 label: PRIORITY_LABELS[p],
               }))}
             />
-
-            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={createGithubIssue}
-                onChange={(e) => setCreateGithubIssue(e.target.checked)}
-                className="rounded"
-              />
-              Also create GitHub issue (requires repo URL in workspace settings)
-            </label>
 
             <div className="flex gap-3 pt-2">
               <Button onClick={handlePromote} loading={promoting}>

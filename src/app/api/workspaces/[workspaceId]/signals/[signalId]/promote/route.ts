@@ -2,7 +2,6 @@ import { NextResponse } from "next/server"
 import { requireWorkspaceMember } from "@/lib/auth-guard"
 import { getSignalById, promoteSignal } from "@/lib/db/queries/signals"
 import { createWorkItem } from "@/lib/db/queries/work-items"
-import { getWorkspaceById } from "@/lib/db/queries/workspaces"
 import { promoteSignalSchema } from "@/lib/validations/signal"
 import { SIGNAL_TYPE_LABELS, SIGNAL_ARR_TIER_LABELS } from "@/lib/constants"
 
@@ -41,7 +40,7 @@ export async function POST(
       )
     }
 
-    const { title, priority, createGithubIssue } = parsed.data
+    const { title, priority } = parsed.data
 
     // Build description with signal context
     const contextLines = [
@@ -70,48 +69,6 @@ export async function POST(
       status: "todo",
     })
 
-    // Optionally create GitHub issue if workspace has a repo configured
-    let githubIssueUrl: string | null = null
-    if (createGithubIssue) {
-      const workspace = await getWorkspaceById(workspaceId)
-      if (workspace?.githubRepoUrl) {
-        try {
-          const repoMatch = workspace.githubRepoUrl.match(
-            /github\.com\/([^/]+)\/([^/]+?)(?:\.git)?(?:\/|$)/
-          )
-          if (repoMatch) {
-            const [, owner, repo] = repoMatch
-            const labels = ["signal", signal.type]
-            if (signal.arrTier !== "unknown") labels.push(signal.arrTier)
-
-            const ghRes = await fetch(
-              `https://api.github.com/repos/${owner}/${repo}/issues`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  // Note: in production, use a stored GitHub token from workspace settings
-                  // For now we attempt without auth (will work for public repos)
-                },
-                body: JSON.stringify({
-                  title,
-                  body: contextLines,
-                  labels,
-                }),
-              }
-            )
-
-            if (ghRes.ok) {
-              const ghIssue = await ghRes.json()
-              githubIssueUrl = ghIssue.html_url
-            }
-          }
-        } catch {
-          // GitHub issue creation is best-effort — don't fail the whole promote
-        }
-      }
-    }
-
     // Mark signal as promoted
     const updatedSignal = await promoteSignal(signalId, workItem.id)
 
@@ -119,7 +76,6 @@ export async function POST(
       {
         signal: updatedSignal,
         workItem,
-        githubIssueUrl,
       },
       { status: 201 }
     )
