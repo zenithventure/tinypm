@@ -19,6 +19,7 @@ const categoryOptions = [
 
 const MAX_FILES = 3
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_MESSAGE_LENGTH = 5000
 
 export default function SupportPage() {
   const [category, setCategory] = useState("")
@@ -136,15 +137,21 @@ export default function SupportPage() {
           placeholder="Brief description of your issue"
         />
 
-        <Textarea
-          id="message"
-          label="Message"
-          required
-          rows={6}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Describe your issue or question in detail..."
-        />
+        <div>
+          <Textarea
+            id="message"
+            label="Message"
+            required
+            rows={6}
+            maxLength={MAX_MESSAGE_LENGTH}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Describe your issue or question in detail..."
+          />
+          <p className={`text-xs mt-1 text-right ${message.length > MAX_MESSAGE_LENGTH * 0.9 ? "text-red-500" : "text-gray-400"}`}>
+            {message.length}/{MAX_MESSAGE_LENGTH}
+          </p>
+        </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
