@@ -51,7 +51,7 @@ export async function logActivity(
       entityId,
       actorId: actorId ?? undefined,
       action,
-      metadata: metadata ? JSON.stringify(metadata) : null,
+      metadata: metadata ?? null,
     })
     .returning()
 

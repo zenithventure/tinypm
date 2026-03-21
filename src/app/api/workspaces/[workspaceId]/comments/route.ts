@@ -50,14 +50,14 @@ export async function POST(
       )
     }
 
-    const comment = await createComment(workspaceId, user.id!, parsed.data)
+    const comment = await createComment(workspaceId, user.id, parsed.data)
 
     // Log activity
     await logActivity(
       workspaceId,
       parsed.data.entityType,
       parsed.data.entityId,
-      user.id!,
+      user.id,
       "comment_added",
       { commentId: comment.id }
     )

@@ -6,6 +6,7 @@ import {
   integer,
   boolean,
   primaryKey,
+  jsonb,
 } from "drizzle-orm/pg-core"
 import { relations } from "drizzle-orm"
 
@@ -200,7 +201,7 @@ export const activityLog = pgTable("activity_log", {
   actorId: uuid("actor_id")
     .references(() => users.id, { onDelete: "set null" }),
   action: text("action").notNull(), // 'status_changed' | 'assigned' | 'linked_to_roadmap' | 'comment_added' | 'created' | ...
-  metadata: text("metadata"), // JSON string: { from, to, commentId, ... }
+  metadata: jsonb("metadata") as any, // { from, to, commentId, ... }
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 })
 

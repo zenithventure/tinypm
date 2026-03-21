@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/toast"
+import { useAuth } from "@/hooks/use-auth"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -39,8 +40,17 @@ function getInitials(name: string | null, email: string) {
 
 export function CommentsSection({ workspaceId, entityType, entityId }: CommentsSectionProps) {
   const { toast } = useToast()
+  const { user: currentUser } = useAuth()
   const commentsUrl = `/api/workspaces/${workspaceId}/comments?entityType=${entityType}&entityId=${entityId}`
   const { data: comments, isLoading, mutate } = useSWR(commentsUrl, fetcher)
+  const { data: members } = useSWR(
+    `/api/workspaces/${workspaceId}/members`,
+    fetcher
+  )
+
+  const currentUserRole: string | undefined = members?.find(
+    (m: { userId: string; role: string }) => m.userId === currentUser?.userId
+  )?.role
 
   const [body, setBody] = useState("")
   const [submitting, setSubmitting] = useState(false)
@@ -85,6 +95,14 @@ export function CommentsSection({ workspaceId, entityType, entityId }: CommentsS
     } catch {
       toast("Something went wrong", { variant: "error" })
     }
+  }
+
+  function canDelete(commentAuthorId: string): boolean {
+    if (!currentUser) return false
+    return (
+      currentUser.userId === commentAuthorId ||
+      currentUserRole === "owner"
+    )
   }
 
   return (
@@ -138,13 +156,15 @@ export function CommentsSection({ workspaceId, entityType, entityId }: CommentsS
                     <span className="text-xs text-gray-400">
                       {formatDate(comment.createdAt)}
                     </span>
-                    <button
-                      onClick={() => handleDelete(comment.id)}
-                      className="text-gray-300 hover:text-red-500 transition-colors"
-                      title="Delete comment"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    {canDelete(comment.authorId) && (
+                      <button
+                        onClick={() => handleDelete(comment.id)}
+                        className="text-gray-300 hover:text-red-500 transition-colors"
+                        title="Delete comment"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
                 <p className="text-sm text-gray-700 whitespace-pre-wrap">{comment.body}</p>
