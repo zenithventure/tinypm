@@ -47,34 +47,59 @@ export async function getSignalById(id: string) {
 }
 
 async function getNextPublicId(workspaceId: string): Promise<string> {
+  // Use MAX of the numeric portion of existing public IDs rather than COUNT(*).
+  //
+  // COUNT-based approach causes duplicate publicId collisions:
+  //   (a) Deleted signals cause ID reuse: delete SIG-0003, COUNT drops back,
+  //       next insert produces SIG-0003 again → UNIQUE constraint violation.
+  //   (b) Concurrent inserts can race on the same COUNT value.
+  //
+  // MAX(numeric_part) always generates an ID strictly greater than all existing IDs,
+  // matching the pattern applied to work items in PR #22 (TD-0027).
   const result = await db
-    .select({ count: sql<number>`COUNT(*)` })
+    .select({
+      maxNum: sql<string | null>`MAX(CAST(SUBSTRING(public_id, 4) AS INTEGER))`,
+    })
     .from(signals)
     .where(eq(signals.workspaceId, workspaceId))
 
-  const num = Number(result[0]?.count ?? 0) + 1
+  const num = Number(result[0]?.maxNum ?? 0) + 1
   return `SIG-${String(num).padStart(4, "0")}`
 }
 
-export async function createSignal(workspaceId: string, data: CreateSignalInput) {
+export async function createSignal(
+  workspaceId: string,
+  data: CreateSignalInput,
+  _attempt = 0
+): Promise<typeof signals.$inferSelect> {
   const publicId = await getNextPublicId(workspaceId)
 
-  const [signal] = await db
-    .insert(signals)
-    .values({
-      workspaceId,
-      publicId,
-      description: data.description,
-      source: data.source ?? "manual",
-      clientName: data.clientName ?? null,
-      arrTier: data.arrTier ?? "unknown",
-      type: data.type,
-      notes: data.notes ?? null,
-      capturedAt: data.capturedAt ? new Date(data.capturedAt) : new Date(),
-    })
-    .returning()
+  try {
+    const [signal] = await db
+      .insert(signals)
+      .values({
+        workspaceId,
+        publicId,
+        description: data.description,
+        source: data.source ?? "manual",
+        clientName: data.clientName ?? null,
+        arrTier: data.arrTier ?? "unknown",
+        type: data.type,
+        notes: data.notes ?? null,
+        capturedAt: data.capturedAt ? new Date(data.capturedAt) : new Date(),
+      })
+      .returning()
 
-  return signal
+    return signal
+  } catch (err: any) {
+    // Retry on publicId unique constraint violations (race condition between
+    // concurrent inserts). MAX-based getNextPublicId re-runs each attempt,
+    // picking up the newly inserted ID as the new baseline.
+    if (_attempt < 3 && err.code === "23505") {
+      return createSignal(workspaceId, data, _attempt + 1)
+    }
+    throw err
+  }
 }
 
 export async function updateSignal(id: string, data: UpdateSignalInput) {
