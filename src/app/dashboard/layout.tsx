@@ -3,13 +3,12 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, Map, ListTodo, Settings, Users, Menu, X, LogOut, LifeBuoy } from "lucide-react"
+import { LayoutDashboard, Map, ListTodo, Settings, Users, Menu, X, LogOut, LifeBuoy, Kanban } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
 
 const navItems = [
   { href: "/dashboard/workspaces", label: "Workspaces", icon: LayoutDashboard },
-  { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -27,6 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { href: `/dashboard/workspaces/${workspaceId}`, label: "Overview", icon: LayoutDashboard },
         { href: `/dashboard/workspaces/${workspaceId}/roadmap`, label: "Roadmap", icon: Map },
         { href: `/dashboard/workspaces/${workspaceId}/work-items`, label: "Work Items", icon: ListTodo },
+        { href: `/dashboard/workspaces/${workspaceId}/work-items/kanban`, label: "Kanban", icon: Kanban },
         { href: `/dashboard/workspaces/${workspaceId}/members`, label: "Members", icon: Users },
         { href: `/dashboard/workspaces/${workspaceId}/settings`, label: "Settings", icon: Settings },
       ]
@@ -80,6 +80,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
         )}
         <div className="ml-auto flex items-center gap-4">
+          <Link
+            href="/dashboard/support"
+            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            title="Support"
+          >
+            <LifeBuoy className="w-4 h-4" />
+            <span className="hidden sm:inline">Support</span>
+          </Link>
           <span className="text-sm text-gray-600 hidden sm:inline">{user?.email}</span>
           <button onClick={handleSignOut} className="text-sm text-gray-500 hover:text-gray-700">
             <LogOut className="w-4 h-4" />
