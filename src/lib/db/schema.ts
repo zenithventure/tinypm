@@ -146,7 +146,7 @@ export const signals = pgTable("signals", {
   clientName: text("client_name"),
   arrTier: text("arr_tier").notNull().default("unknown"), // enterprise | mid-market | smb | unknown
   type: text("type").notNull(), // feature | bug | compliance | infra
-  status: text("status").notNull().default("inbox"), // inbox | promoted | dismissed
+  status: text("status").notNull().default("inbox"), // inbox | linked | promoted | dismissed
   notes: text("notes"),
   promotedWorkItemId: uuid("promoted_work_item_id")
     .references(() => workItems.id, { onDelete: "set null" }),

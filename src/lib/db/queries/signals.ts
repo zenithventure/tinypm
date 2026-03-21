@@ -52,7 +52,7 @@ async function getNextPublicId(workspaceId: string): Promise<string> {
     .from(signals)
     .where(eq(signals.workspaceId, workspaceId))
 
-  const num = (result[0]?.count ?? 0) + 1
+  const num = Number(result[0]?.count ?? 0) + 1
   return `SIG-${String(num).padStart(4, "0")}`
 }
 
@@ -108,10 +108,20 @@ export async function promoteSignal(id: string, options: PromoteSignalOptions) {
 
 /**
  * Link a signal to an existing roadmap item (without creating a work item).
- * Sets status to "promoted" and records the roadmap association.
+ * Sets status to "linked" to distinguish from "promoted" (which creates a work item).
  */
 export async function linkSignalToRoadmap(id: string, roadmapItemId: string) {
-  return promoteSignal(id, { roadmapItemId })
+  const [signal] = await db
+    .update(signals)
+    .set({
+      status: "linked",
+      promotedRoadmapItemId: roadmapItemId,
+      updatedAt: new Date(),
+    })
+    .where(eq(signals.id, id))
+    .returning()
+
+  return signal
 }
 
 export async function deleteSignal(id: string) {
