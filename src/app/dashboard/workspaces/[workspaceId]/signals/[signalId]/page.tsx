@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import useSWR from "swr"
-import { ArrowLeft, ArrowUpRight, Trash2 } from "lucide-react"
+import { ArrowLeft, ArrowUpRight, Trash2, Github } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
@@ -33,6 +33,11 @@ export default function SignalDetailPage({
 
   const { data: signal, isLoading, mutate } = useSWR(
     `/api/workspaces/${workspaceId}/signals/${signalId}`,
+    fetcher
+  )
+
+  const { data: workspace } = useSWR(
+    `/api/workspaces/${workspaceId}`,
     fetcher
   )
 
@@ -233,6 +238,44 @@ export default function SignalDetailPage({
               This will create a tinypm work item from this signal, preserving
               all context.
             </p>
+
+            {/* GitHub repo context */}
+            {workspace?.githubRepoUrl ? (
+              <div className="flex items-start gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                <Github className="w-4 h-4 text-gray-500 mt-0.5 shrink-0" />
+                <div>
+                  <span className="text-gray-600 font-medium">Linked repo: </span>
+                  <a
+                    href={workspace.githubRepoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline break-all"
+                  >
+                    {workspace.githubRepoUrl.replace("https://github.com/", "")}
+                  </a>
+                  <p className="text-gray-400 text-xs mt-0.5">
+                    A GitHub issue can be linked manually after promotion.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm">
+                <Github className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                <div>
+                  <span className="text-amber-700 font-medium">No GitHub repo configured</span>
+                  <p className="text-amber-600 text-xs mt-0.5">
+                    Add a GitHub repo URL in workspace{" "}
+                    <a
+                      href={`/dashboard/workspaces/${workspaceId}/settings`}
+                      className="underline hover:text-amber-800"
+                    >
+                      Settings
+                    </a>{" "}
+                    to track which repo this work item belongs to.
+                  </p>
+                </div>
+              </div>
+            )}
 
             <Input
               id="promote-title"
